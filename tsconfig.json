@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "AMD",
+        "outFile": "js/game.js",
+        "target": "es6",
+        "sourceMap":true,
+        "removeComments": true
+    },
+    "include": [
+        "core/**/*",
+        "*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
+}

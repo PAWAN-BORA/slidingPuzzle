@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title> Game </title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+	<!-- <link rel="stylesheet" href="css/game.css" type="text/css"> -->
+</head>
+    <style>
+    body {
+        margin: 0;
+    }
+    #canvasArea {
+        display:flex;
+        justify-content:center;
+        align-items: center;
+    }
+    #loading_screen {
+        position:absolute;
+        top:0;
+        bottom:0;
+        left:0;
+        right:0;
+        text-align:center;
+        font-size:50px;
+        height:100%;
+        width:100%;
+        background:rgba(36, 38, 40, 0.9);
+        display: table;
+        z-index: 50;
+    }
+    #loader {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    </style>
+    <body>
+        <section id="game">
+            <div id="canvasArea">
+                <canvas id="canvas" width="1366" height="768" style="border: 1px solid red;"> </canvas>
+            </div>
+            <!-- <div id="starting_page">
+                <div>
+                    <img id="play" src="img/play.png" alt="Play button">
+                </div>
+            </div> -->
+             <div id="loading_screen">
+                <div id="loader"><img src='assets/texture/swa_loader.gif'></div>
+            </div>
+           
+            <!-- <div id="gameOver">
+                <span>Score: <span id="sco">0</span></span>
+                <span id='right'><img src='img/wizard_clap.gif'></span>
+                <span id='wrong'><img src='img/wrong_Answer.gif'></span>
+				<span><button id="playAgain">Play Again</button> </span>
+			</div> -->
+        </section>
+        <script src="js/game.js"> </script>
+    </body>
+
+</html>
