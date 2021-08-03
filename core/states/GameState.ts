@@ -7,10 +7,13 @@ namespace Game {
         private checkBtn:UIButton;
         private resetBtn:UIButton;
         private solveBtn:UIButton;
+        private boardDim:number = 3;
+        private boardSolution:BoardSoultion;
         public constructor(world:World) {
             this.uIManager = new UIManager();
-            this.board = new Board(3);
+            this.board = new Board(this.boardDim);
             this.buttonManager = new ButtonManager();
+            // this.boardSolution = new BoardSoultion(this.board.getBoxes, this.boardDim);
             this.uIManager.addManagers(this.board);
             this.uIManager.addManagers(this.buttonManager);
             this.setButtons();
@@ -58,10 +61,11 @@ namespace Game {
             solveBtn.textStyle.size = "25px";
             solveBtn.textStyle.color = "white";
             solveBtn.background = AssetManager.pictures["btn_format"].image;
-            let solution;
+            // let solution;
             solveBtn.onClick = ()=>{
-               solution = new BoardSoultion(this.board.getBoxes, 3);
-               solution.solution();
+               this.boardSolution = new BoardSoultion(this.board.getBoxes, this.boardDim);
+            //    this.boardSolution.setBoxes(this.board.getBoxes);
+               this.boardSolution.solution();
             }
             let showSolution = new UIButton(1000, 400, {type:"rectangle", width:143, height:47});
             showSolution.text = "show sol";
@@ -72,8 +76,8 @@ namespace Game {
             showSolution.background = AssetManager.pictures["btn_format"].image;
             showSolution.onClick = ()=>{
                
-               if(solution.solutionNodes.length!==0){
-                 this.viewSolution(solution.solutionNodes);
+               if(this.boardSolution.solutionNodes.length!==0){
+                 this.viewSolution(this.boardSolution.solutionNodes);
                } else {
                    console.log("not solved yet");
                };

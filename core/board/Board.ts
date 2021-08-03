@@ -310,6 +310,8 @@ namespace Game {
                 return true;
             } else if(this.dim===4 && moving===16) {
                 return true;
+            } else if(this.dim===2 && moving===4){
+                return true;
             }
             return false;
         }

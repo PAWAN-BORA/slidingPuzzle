@@ -440,6 +440,9 @@ var Game;
             else if (this.dim === 4 && moving === 16) {
                 return true;
             }
+            else if (this.dim === 2 && moving === 4) {
+                return true;
+            }
             return false;
         }
         getNumbers(type) {
@@ -591,6 +594,9 @@ var Game;
             this.boxes = boxes;
             this.dim = dim;
         }
+        setBoxes(boxes) {
+            this.boxes = boxes;
+        }
         getEmpty(boxes) {
             for (let b of boxes) {
                 if (b.num === undefined) {
@@ -603,34 +609,44 @@ var Game;
         solution() {
             return __awaiter(this, void 0, void 0, function* () {
                 let queue = [];
-                let rootNode = new Game.Node(this.boxes, 3, 0);
+                let rootNode = new Game.Node(this.boxes, this.dim, 0);
                 queue.push(rootNode);
                 let num = 0;
+                let move = 0;
+                console.time('test');
                 while (queue.length !== 0) {
                     const [currentNode, index] = this.getCurrentNode(queue);
                     queue.splice(index, 1);
-                    this.dicoveredNodes.push(currentNode);
                     if (currentNode.isSolution()) {
                         console.log("is a solution");
                         this.getSolutionNode(currentNode);
                         console.log(this.solutionNodes);
-                        return;
+                        break;
                     }
+                    this.dicoveredNodes.push(currentNode);
                     let neighbourNode = currentNode.getNeigbourNode();
-                    console.log(1);
                     for (let n of neighbourNode) {
+                        move++;
                         if (!this.isDiscoverd(n)) {
                             queue.push(n);
                             num++;
-                            ;
-                            if (num === 10000) {
+                            if (num >= 20000) {
                                 console.log(this.dicoveredNodes);
+                                this.getSolutionNode(currentNode);
                                 console.log("returned");
-                                return;
+                                queue.length = 0;
+                                break;
                             }
                         }
                     }
                 }
+                console.log(num);
+                console.log(move);
+                console.log(this.dicoveredNodes.length);
+                for (let i = 0; i < this.dicoveredNodes.length; i++) {
+                    let boxes = this.dicoveredNodes[i].boxes;
+                }
+                console.timeEnd('test');
             });
         }
         getSolutionNode(node) {
@@ -740,6 +756,7 @@ var Game;
         constructor(boxes, dim, cost) {
             this.previousNode = undefined;
             this.previousMove = undefined;
+            this.siblingNodes = [];
             this.cost = 0;
             this.boxes = boxes;
             this.dim = dim;
@@ -754,40 +771,84 @@ var Game;
                 }
             }
             if (this.dim === 3 && moving === 9) {
-                return true;
             }
             else if (this.dim === 4 && moving === 16) {
                 return true;
+            }
+            else if (this.dim === 2 && moving === 4) {
             }
             return false;
         }
         getNeigbourNode() {
             let emptyBox = this.getEmptyBox();
             let neighbourNode = [];
-            let cost = this.cost++;
+            let cost = this.cost + 1;
             if (emptyBox.left !== undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.left.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if (this.previousNode != undefined) {
+                    if (!this.isPreviousNeighbour(newBoxes)) {
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                }
+                else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
             }
             if (emptyBox.right !== undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.right.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if (this.previousNode != undefined) {
+                    if (!this.isPreviousNeighbour(newBoxes)) {
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                }
+                else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
             }
             if (emptyBox.top !== undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.top.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if (this.previousNode != undefined) {
+                    if (!this.isPreviousNeighbour(newBoxes)) {
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                }
+                else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
             }
             if (emptyBox.bottom !== undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.bottom.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if (this.previousNode != undefined) {
+                    if (!this.isPreviousNeighbour(newBoxes)) {
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                }
+                else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
+            }
+            for (let n of neighbourNode) {
+                for (let p of neighbourNode) {
+                    if (n != p) {
+                        n.siblingNodes.push(p);
+                    }
+                }
             }
             return neighbourNode;
         }
@@ -815,6 +876,30 @@ var Game;
                     return b;
                 }
             }
+        }
+        shouldAddOnNeigbour(boxes) {
+            let isExist = false;
+            if (!isExist) {
+                let previousBoxes = this.previousNode.boxes;
+                for (let i = 0; i < boxes.length; i++) {
+                    if (boxes[i].num !== previousBoxes[i].num) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else {
+                return false;
+            }
+        }
+        isPreviousNeighbour(boxes) {
+            let previousBoxes = this.previousNode.boxes;
+            for (let i = 0; i < boxes.length; i++) {
+                if (boxes[i].num !== previousBoxes[i].num) {
+                    return false;
+                }
+            }
+            return true;
         }
         isEqual(node) {
             for (let i = 0; i < node.boxes.length; i++) {
@@ -1590,8 +1675,9 @@ var Game;
 (function (Game) {
     class GameState {
         constructor(world) {
+            this.boardDim = 3;
             this.uIManager = new Game.UIManager();
-            this.board = new Game.Board(3);
+            this.board = new Game.Board(this.boardDim);
             this.buttonManager = new Game.ButtonManager();
             this.uIManager.addManagers(this.board);
             this.uIManager.addManagers(this.buttonManager);
@@ -1638,10 +1724,9 @@ var Game;
             solveBtn.textStyle.size = "25px";
             solveBtn.textStyle.color = "white";
             solveBtn.background = Game.AssetManager.pictures["btn_format"].image;
-            let solution;
             solveBtn.onClick = () => {
-                solution = new Game.BoardSoultion(this.board.getBoxes, 3);
-                solution.solution();
+                this.boardSolution = new Game.BoardSoultion(this.board.getBoxes, this.boardDim);
+                this.boardSolution.solution();
             };
             let showSolution = new Game.UIButton(1000, 400, { type: "rectangle", width: 143, height: 47 });
             showSolution.text = "show sol";
@@ -1651,8 +1736,8 @@ var Game;
             showSolution.textStyle.color = "white";
             showSolution.background = Game.AssetManager.pictures["btn_format"].image;
             showSolution.onClick = () => {
-                if (solution.solutionNodes.length !== 0) {
-                    this.viewSolution(solution.solutionNodes);
+                if (this.boardSolution.solutionNodes.length !== 0) {
+                    this.viewSolution(this.boardSolution.solutionNodes);
                 }
                 else {
                     console.log("not solved yet");

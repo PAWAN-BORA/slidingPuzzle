@@ -6,13 +6,16 @@ namespace Game {
         public dim:number;
         public previousNode:Node = undefined;
         public previousMove:Point = undefined;
+        public siblingNodes:Node[] = [];
         public ManhattanDistance:number;
         public cost:number = 0;
+        public neighbours:Node[];
         constructor(boxes:Box[], dim:number, cost:number) {
             this.boxes = boxes;
             this.dim = dim;
             this.cost = cost;
             this.ManhattanDistance = this.getManhattanDistance();
+            // this.neighbours = this.getNeigbourNode();
         }
 
         public isSolution():boolean {
@@ -27,39 +30,96 @@ namespace Game {
             }
             // console.log(moving);
             if(this.dim===3 && moving===9) {
-                return true;
+                // return true;
             } else if(this.dim===4 && moving===16) {
                 return true;
+            } else if(this.dim===2 && moving===4){
+                // return true;
             }
             return false;
         }
         public getNeigbourNode():Node[] {
             let emptyBox = this.getEmptyBox();
             let neighbourNode:Node[] = [];
-            let cost = this.cost++;
+            let cost = this.cost+1;
+            // console.log("1")
+           
             if(emptyBox.left!==undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.left.position)
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if(this.previousNode!=undefined){
+                    if(!this.isPreviousNeighbour(newBoxes)){
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                    // console.log("exist!");
+                } else {
+                    // console.log("not exist!");
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
+                // let newNode = new Node(newBoxes, this.dim, cost);
+                // newNode.previousNode = this;
+                // neighbourNode.push(newNode);
             } 
             if(emptyBox.right!==undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.right.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if(this.previousNode!=undefined){
+                    if(!this.isPreviousNeighbour(newBoxes)){
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                } else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
+                // let newNode = new Node(newBoxes, this.dim, cost);
+                // newNode.previousNode = this;
+                // neighbourNode.push(newNode)
             }
             if(emptyBox.top!==undefined){
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.top.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if(this.previousNode!=undefined){
+                    if(!this.isPreviousNeighbour(newBoxes)){
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                } else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
+                // let newNode = new Node(newBoxes, this.dim, cost);
+                // newNode.previousNode = this;
+                // neighbourNode.push(newNode);
             }
             if(emptyBox.bottom!==undefined) {
                 let newBoxes = this.switchNum(this.boxes, emptyBox.position, emptyBox.bottom.position);
-                let newNode = new Node(newBoxes, this.dim, cost);
-                newNode.previousNode = this;
-                neighbourNode.push(newNode);
+                if(this.previousNode!=undefined){
+                    if(!this.isPreviousNeighbour(newBoxes)){
+                        let newNode = new Node(newBoxes, this.dim, cost);
+                        newNode.previousNode = this;
+                        neighbourNode.push(newNode);
+                    }
+                } else {
+                    let newNode = new Node(newBoxes, this.dim, cost);
+                    newNode.previousNode = this;
+                    neighbourNode.push(newNode);
+                }
+                // let newNode = new Node(newBoxes, this.dim, cost);
+                // newNode.previousNode = this;
+                // neighbourNode.push(newNode);
+            }
+            for(let n of neighbourNode){
+                for(let p of neighbourNode){
+                    if(n!=p){
+                        n.siblingNodes.push(p)
+                    }
+                }
             }
             return neighbourNode;
         }
@@ -87,6 +147,43 @@ namespace Game {
                     return b;
                 }
             }
+        }
+        private shouldAddOnNeigbour(boxes:Box[]):boolean{
+            let isExist = false;
+            // for(let sib of this.siblingNodes){
+            //     isExist = true;
+            //     for(let i=0; i<boxes.length; i++){
+            //         if(boxes[i].num!==sib.boxes[i].num){
+            //             isExist = false;
+            //             break;
+            //         }
+            //     }
+            //     if(isExist){
+            //         return false;
+            //     }
+            // }
+            if(!isExist){
+                let previousBoxes = this.previousNode.boxes;
+                for(let i=0; i<boxes.length; i++) {
+                    if(boxes[i].num!==previousBoxes[i].num) {
+                        return true;
+                    }
+                }
+                return false; 
+            } else {
+                return false;
+            }
+
+            // return true;
+        }
+        private isPreviousNeighbour(boxes:Box[]):boolean{
+            let previousBoxes = this.previousNode.boxes;
+            for(let i=0; i<boxes.length; i++) {
+                if(boxes[i].num!==previousBoxes[i].num) {
+                    return false;
+                }
+            }
+            return true;
         }
         public isEqual(node:Node):boolean {
             for(let i=0; i<node.boxes.length; i++) {
