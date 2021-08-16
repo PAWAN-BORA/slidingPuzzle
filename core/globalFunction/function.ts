@@ -1,5 +1,5 @@
 /*-----------> random integer genrator function <----------------*/
-function randomInt(a, b):number {
+function randomInt(a:number, b:number):number {
     if (a > b) {
         throw Error(`${a} should be less than ${b}`);
        

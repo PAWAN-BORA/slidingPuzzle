@@ -354,7 +354,6 @@ var Game;
             else {
                 this.numbers = this.getNumbers("even");
             }
-            this.blankPos = randomInt(0, this.numbers.length);
             this.resetNumbers();
         }
         resetNumbers() {
@@ -449,6 +448,25 @@ var Game;
             if (type === "even") {
                 let size = this.dim * this.dim - 1;
                 let numbers = randomIntArray(1, size);
+                let inversion = this.getPair(numbers);
+                let blankLine = undefined;
+                if (inversion % 2 == 0) {
+                    blankLine = randomInt(0, this.dim - 1);
+                    while (blankLine % 2 == 0) {
+                        blankLine = randomInt(0, this.dim - 1);
+                    }
+                }
+                else {
+                    blankLine = randomInt(0, this.dim - 1);
+                    while (blankLine % 2 == 1) {
+                        blankLine = randomInt(0, this.dim - 1);
+                    }
+                }
+                console.log(inversion);
+                console.log(blankLine);
+                let int = randomInt(0, this.dim - 1);
+                console.log(int);
+                this.blankPos = int + blankLine * this.dim;
                 return numbers;
             }
             else if (type === "odd") {
@@ -460,7 +478,7 @@ var Game;
                     inversion = this.getPair(numbers);
                     console.log(inversion);
                 }
-                console.log(inversion);
+                this.blankPos = randomInt(0, numbers.length);
                 return numbers;
             }
         }
@@ -606,14 +624,62 @@ var Game;
         }
         getCost() {
         }
+        idaSolution() {
+            return __awaiter(this, void 0, void 0, function* () {
+                console.time('idatest');
+                let rootNode = new Game.Node(this.boxes, this.dim, 0);
+                let maxDepth = 1;
+                let num = 0;
+                let path = [rootNode];
+                let bound = rootNode.ManhattanDistance;
+                for (let i = 0; i < 20; i++) {
+                    console.log("this is sepreator");
+                    let data = this.DLS(path, i, bound);
+                    if (data.found) {
+                        this.solutionNodes = path;
+                        console.log(this.solutionNodes);
+                        break;
+                    }
+                    bound = data.bound;
+                }
+                console.timeEnd('idatest');
+            });
+        }
+        DLS(path, depth, bound) {
+            let node = path[path.length - 1];
+            let g = node.cost;
+            let f = g + node.ManhattanDistance;
+            if (f > bound) {
+                return { found: false, bound: f };
+            }
+            if (node.isSolution()) {
+                return { found: true, bound: bound };
+            }
+            let neighbourNodes = node.getNeigbourNode();
+            let min = 10000;
+            for (const n of neighbourNodes) {
+                if (!path.includes(n)) {
+                    path.push(n);
+                    let data = this.DLS(path, 1, bound);
+                    if (data.found) {
+                        return data;
+                    }
+                    if (data.bound < min) {
+                        min = data.bound;
+                    }
+                    ;
+                    path.pop();
+                }
+            }
+            return { found: false, bound: min };
+        }
         solution() {
             return __awaiter(this, void 0, void 0, function* () {
+                console.time('Atest');
                 let queue = [];
                 let rootNode = new Game.Node(this.boxes, this.dim, 0);
                 queue.push(rootNode);
                 let num = 0;
-                let move = 0;
-                console.time('test');
                 while (queue.length !== 0) {
                     const [currentNode, index] = this.getCurrentNode(queue);
                     queue.splice(index, 1);
@@ -623,16 +689,14 @@ var Game;
                         console.log(this.solutionNodes);
                         break;
                     }
+                    currentNode.initialPoint = this.dicoveredNodes.length;
                     this.dicoveredNodes.push(currentNode);
                     let neighbourNode = currentNode.getNeigbourNode();
                     for (let n of neighbourNode) {
-                        move++;
-                        if (!this.isDiscoverd(n)) {
+                        if (!this.isDiscoverd(n, n.previousNode.initialPoint)) {
                             queue.push(n);
                             num++;
-                            if (num >= 20000) {
-                                console.log(this.dicoveredNodes);
-                                this.getSolutionNode(currentNode);
+                            if (num >= 500000) {
                                 console.log("returned");
                                 queue.length = 0;
                                 break;
@@ -640,13 +704,7 @@ var Game;
                         }
                     }
                 }
-                console.log(num);
-                console.log(move);
-                console.log(this.dicoveredNodes.length);
-                for (let i = 0; i < this.dicoveredNodes.length; i++) {
-                    let boxes = this.dicoveredNodes[i].boxes;
-                }
-                console.timeEnd('test');
+                console.timeEnd('Atest');
             });
         }
         getSolutionNode(node) {
@@ -669,8 +727,9 @@ var Game;
             }
             return [selectedNode, selectedIndex];
         }
-        isDiscoverd(node) {
-            for (let d of this.dicoveredNodes) {
+        isDiscoverd(node, level) {
+            for (let i = level; i < this.dicoveredNodes.length; i++) {
+                let d = this.dicoveredNodes[i];
                 if (d.isEqual(node)) {
                     return true;
                 }
@@ -758,6 +817,7 @@ var Game;
             this.previousMove = undefined;
             this.siblingNodes = [];
             this.cost = 0;
+            this.initialPoint = 0;
             this.boxes = boxes;
             this.dim = dim;
             this.cost = cost;
@@ -771,11 +831,13 @@ var Game;
                 }
             }
             if (this.dim === 3 && moving === 9) {
+                return true;
             }
             else if (this.dim === 4 && moving === 16) {
                 return true;
             }
             else if (this.dim === 2 && moving === 4) {
+                return true;
             }
             return false;
         }
@@ -843,13 +905,6 @@ var Game;
                     neighbourNode.push(newNode);
                 }
             }
-            for (let n of neighbourNode) {
-                for (let p of neighbourNode) {
-                    if (n != p) {
-                        n.siblingNodes.push(p);
-                    }
-                }
-            }
             return neighbourNode;
         }
         switchNum(boxes, EmptyPos, newPos) {
@@ -878,19 +933,43 @@ var Game;
             }
         }
         shouldAddOnNeigbour(boxes) {
-            let isExist = false;
-            if (!isExist) {
-                let previousBoxes = this.previousNode.boxes;
-                for (let i = 0; i < boxes.length; i++) {
-                    if (boxes[i].num !== previousBoxes[i].num) {
-                        return true;
-                    }
+            let isExist = this.isSiblingExist(this, boxes);
+            if (isExist) {
+                return false;
+            }
+            let previousBoxes = this.previousNode.boxes;
+            isExist = true;
+            for (let i = 0; i < boxes.length; i++) {
+                if (boxes[i].num !== previousBoxes[i].num) {
+                    isExist = false;
                 }
+            }
+            if (isExist) {
+                return false;
+            }
+            isExist = this.isSiblingExist(this.previousNode, boxes);
+            if (isExist) {
                 return false;
             }
             else {
-                return false;
+                return true;
             }
+        }
+        isSiblingExist(node, boxes) {
+            let isExist = false;
+            for (let sib of node.siblingNodes) {
+                isExist = true;
+                for (let i = 0; i < boxes.length; i++) {
+                    if (boxes[i].num !== sib.boxes[i].num) {
+                        isExist = false;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    return true;
+                }
+            }
+            return false;
         }
         isPreviousNeighbour(boxes) {
             let previousBoxes = this.previousNode.boxes;
@@ -1675,7 +1754,7 @@ var Game;
 (function (Game) {
     class GameState {
         constructor(world) {
-            this.boardDim = 3;
+            this.boardDim = 4;
             this.uIManager = new Game.UIManager();
             this.board = new Game.Board(this.boardDim);
             this.buttonManager = new Game.ButtonManager();
@@ -1698,14 +1777,8 @@ var Game;
             checkBtn.textStyle.color = "white";
             checkBtn.background = Game.AssetManager.pictures["btn_format"].image;
             checkBtn.onClick = () => {
-                console.log("dsds");
-                let answer = this.board.checkAnswer();
-                if (answer === true) {
-                    console.log("good");
-                }
-                else {
-                    console.log("try again");
-                }
+                this.boardSolution = new Game.BoardSoultion(this.board.getBoxes, this.boardDim);
+                this.boardSolution.idaSolution();
             };
             let resetBtn = new Game.UIButton(1000, 496.3, { type: "rectangle", width: 143, height: 47 });
             resetBtn.text = "reset";

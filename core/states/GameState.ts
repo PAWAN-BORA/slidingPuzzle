@@ -7,7 +7,7 @@ namespace Game {
         private checkBtn:UIButton;
         private resetBtn:UIButton;
         private solveBtn:UIButton;
-        private boardDim:number = 3;
+        private boardDim:number = 4;
         private boardSolution:BoardSoultion;
         public constructor(world:World) {
             this.uIManager = new UIManager();
@@ -36,13 +36,17 @@ namespace Game {
             checkBtn.textStyle.color = "white";
             checkBtn.background = AssetManager.pictures["btn_format"].image;
             checkBtn.onClick = ()=>{
-                console.log("dsds");
-                let answer = this.board.checkAnswer();
-                if(answer===true) {
-                    console.log("good");
-                } else {
-                    console.log("try again");
-                }
+                this.boardSolution = new BoardSoultion(this.board.getBoxes, this.boardDim);
+                //    this.boardSolution.setBoxes(this.board.getBoxes);
+                //    this.boardSolution.solution();
+                    this.boardSolution.idaSolution();
+                // console.log("dsds");
+                // let answer = this.board.checkAnswer();
+                // if(answer===true) {
+                //     console.log("good");
+                // } else {
+                //     console.log("try again");
+                // }
             }
             let resetBtn = new UIButton(1000, 496.3, {type:"rectangle", width:143, height:47});
             resetBtn.text = "reset";
@@ -65,7 +69,8 @@ namespace Game {
             solveBtn.onClick = ()=>{
                this.boardSolution = new BoardSoultion(this.board.getBoxes, this.boardDim);
             //    this.boardSolution.setBoxes(this.board.getBoxes);
-               this.boardSolution.solution();
+            //    this.boardSolution.solution();
+                this.boardSolution.solution();
             }
             let showSolution = new UIButton(1000, 400, {type:"rectangle", width:143, height:47});
             showSolution.text = "show sol";

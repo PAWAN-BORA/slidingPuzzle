@@ -231,7 +231,8 @@ namespace Game {
             } else {
                 this.numbers = this.getNumbers("even");
             }
-            this.blankPos = randomInt(0, this.numbers.length);
+            // this.blankPos = randomInt(0, this.numbers.length);
+           
             this.resetNumbers();
             
         }
@@ -319,6 +320,28 @@ namespace Game {
             if(type==="even") {
                 let size = this.dim*this.dim-1;
                 let numbers =  randomIntArray(1, size);
+                // console.log(numbers);
+                // console.log(this.getPair(numbers));
+                let inversion = this.getPair(numbers);
+                let blankLine = undefined;
+                if(inversion%2==0){
+                   blankLine = randomInt(0, this.dim-1);
+                    while(blankLine%2==0){
+                        blankLine = randomInt(0, this.dim-1);
+                    }
+                } else {
+                    blankLine = randomInt(0, this.dim-1);
+                    while(blankLine%2==1){
+                        blankLine = randomInt(0, this.dim-1);
+                    }
+
+                    // let blankPos = randomInt(0, this.dim)*blankLine;
+                }
+                console.log(inversion);
+                console.log(blankLine);
+                let int = randomInt(0, this.dim-1);
+                console.log(int);
+                this.blankPos = int+blankLine*this.dim;
                 return numbers;
             } else if(type==="odd") {
                 let size = this.dim*this.dim-1;
@@ -332,7 +355,8 @@ namespace Game {
                     inversion = this.getPair(numbers);
                     console.log(inversion);
                 }
-                console.log(inversion);
+                // console.log(inversion);
+                this.blankPos = randomInt(0, numbers.length);
                 return numbers;
             }
 

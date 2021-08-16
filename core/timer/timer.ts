@@ -4,7 +4,7 @@ namespace Game {
         public static min:number = 5;
         public static sec:number = 0;
         public static running:boolean = false;
-        private static timer:number;
+        private static timer:NodeJS.Timer;
         
         public static start():void {
             Timer.running = true;

@@ -10,6 +10,7 @@ namespace Game {
         public ManhattanDistance:number;
         public cost:number = 0;
         public neighbours:Node[];
+        public initialPoint:number =0;
         constructor(boxes:Box[], dim:number, cost:number) {
             this.boxes = boxes;
             this.dim = dim;
@@ -30,11 +31,11 @@ namespace Game {
             }
             // console.log(moving);
             if(this.dim===3 && moving===9) {
-                // return true;
+                return true;
             } else if(this.dim===4 && moving===16) {
                 return true;
             } else if(this.dim===2 && moving===4){
-                // return true;
+                return true;
             }
             return false;
         }
@@ -114,13 +115,14 @@ namespace Game {
                 // newNode.previousNode = this;
                 // neighbourNode.push(newNode);
             }
-            for(let n of neighbourNode){
-                for(let p of neighbourNode){
-                    if(n!=p){
-                        n.siblingNodes.push(p)
-                    }
-                }
-            }
+            // for(let n of neighbourNode){
+            //     for(let p of neighbourNode){
+            //         if(n!=p){
+            //             n.siblingNodes.push(p)
+            //         }
+            //     }
+            // }
+            
             return neighbourNode;
         }
         private switchNum(boxes:Box[], EmptyPos:Point, newPos:Point):Box[] {
@@ -149,7 +151,6 @@ namespace Game {
             }
         }
         private shouldAddOnNeigbour(boxes:Box[]):boolean{
-            let isExist = false;
             // for(let sib of this.siblingNodes){
             //     isExist = true;
             //     for(let i=0; i<boxes.length; i++){
@@ -162,19 +163,58 @@ namespace Game {
             //         return false;
             //     }
             // }
-            if(!isExist){
-                let previousBoxes = this.previousNode.boxes;
-                for(let i=0; i<boxes.length; i++) {
-                    if(boxes[i].num!==previousBoxes[i].num) {
-                        return true;
-                    }
-                }
-                return false; 
-            } else {
+            let isExist = this.isSiblingExist(this, boxes);
+            if(isExist){
                 return false;
             }
 
+            let previousBoxes = this.previousNode.boxes;
+            isExist = true;
+            for(let i=0; i<boxes.length; i++) {
+                if(boxes[i].num!==previousBoxes[i].num) {
+                    isExist = false;
+                }
+            }
+            if(isExist){
+                return false;
+            }
+            isExist = this.isSiblingExist(this.previousNode, boxes);
+            if(isExist){
+                return false;
+            } else {
+                return true;
+            }
+
+            // if(!isExist){
+            //     let previousBoxes = this.previousNode.boxes;
+            //     for(let i=0; i<boxes.length; i++) {
+            //         if(boxes[i].num!==previousBoxes[i].num) {
+            //             return true;
+            //         }
+            //     }
+            //     return false; 
+            // } else {
+            //     return false;
+            // }
+
             // return true;
+        }
+        private isSiblingExist(node:Node, boxes:Box[]){
+            let isExist = false;
+            for(let sib of node.siblingNodes){
+                isExist = true;
+                for(let i=0; i<boxes.length; i++){
+                    if(boxes[i].num!==sib.boxes[i].num){
+                        isExist = false;
+                        break;
+                    }
+                }
+                if(isExist){
+                    return true;
+                }
+            }
+            return false;
+
         }
         private isPreviousNeighbour(boxes:Box[]):boolean{
             let previousBoxes = this.previousNode.boxes;
