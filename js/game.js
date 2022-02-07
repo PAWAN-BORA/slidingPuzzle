@@ -633,7 +633,7 @@ var Game;
                 let path = [rootNode];
                 let bound = rootNode.ManhattanDistance;
                 for (let i = 0; i < 20; i++) {
-                    console.log("this is sepreator");
+                    console.log(bound);
                     let data = this.DLS(path, i, bound);
                     if (data.found) {
                         this.solutionNodes = path;
@@ -1754,7 +1754,7 @@ var Game;
 (function (Game) {
     class GameState {
         constructor(world) {
-            this.boardDim = 4;
+            this.boardDim = 3;
             this.uIManager = new Game.UIManager();
             this.board = new Game.Board(this.boardDim);
             this.buttonManager = new Game.ButtonManager();

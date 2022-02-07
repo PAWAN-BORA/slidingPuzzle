@@ -7,7 +7,7 @@ namespace Game {
         private checkBtn:UIButton;
         private resetBtn:UIButton;
         private solveBtn:UIButton;
-        private boardDim:number = 4;
+        private boardDim:number = 3;
         private boardSolution:BoardSoultion;
         public constructor(world:World) {
             this.uIManager = new UIManager();

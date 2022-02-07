@@ -88,7 +88,6 @@ namespace Game {
               
             }
             return {found:false, bound:min};
-           
 
         }
 
