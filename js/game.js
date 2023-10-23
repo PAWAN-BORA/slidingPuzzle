@@ -10,16 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var Game;
 (function (Game) {
     class Engine {
-        constructor(width, height) {
-            this._width = width;
-            this._height = height;
-            this.preload();
-        }
         get width() {
             return this._width;
         }
         get height() {
             return this._height;
+        }
+        constructor(width, height) {
+            this._width = width;
+            this._height = height;
+            this.preload();
         }
         preload() {
             new Game.Picture("btn_format", "assets/texture/btn_format.png");
@@ -187,6 +187,9 @@ var Game;
 var Game;
 (function (Game) {
     class Board {
+        get getBoxes() {
+            return this.boxes;
+        }
         constructor(dim) {
             this.size = 150;
             this.boxes = [];
@@ -200,9 +203,6 @@ var Game;
             this.numbers = [];
             this.dim = dim;
             this.setup();
-        }
-        get getBoxes() {
-            return this.boxes;
         }
         onMouseDown(point) {
             for (let r of this.boxes) {
@@ -1587,14 +1587,14 @@ var Game;
 var Game;
 (function (Game) {
     class Line {
+        get len() {
+            return this.point1.dist(this.point2.x, this.point2.y);
+        }
         constructor(x1, y1, x2, y2) {
             this.isHor = false;
             this.point1 = new Game.Point(x1, y1);
             this.point2 = new Game.Point(x2, y2);
             this.offset = new Game.Point(x2 - x1, y2 - y1 - 10);
-        }
-        get len() {
-            return this.point1.dist(this.point2.x, this.point2.y);
         }
         contain(x, y) {
             let AC = { x: x - this.point1.x, y: y - this.point1.y };
@@ -1958,6 +1958,9 @@ var Game;
 var Game;
 (function (Game) {
     class UIObject {
+        get hover() {
+            return this._hover;
+        }
         constructor(x, y, { type, width, height, radius }) {
             this.textStyle = {
                 color: "black",
@@ -1987,9 +1990,6 @@ var Game;
                 this._shape = new Game.Circle(x + radius, y + radius, radius);
                 this._shpaeOffset = new Game.Point(radius, radius);
             }
-        }
-        get hover() {
-            return this._hover;
         }
     }
     Game.UIObject = UIObject;
@@ -2102,14 +2102,14 @@ var Game;
 var Game;
 (function (Game) {
     class DraggableObjectManager {
-        constructor() {
-            this._draggableObjects = [];
-        }
         get draggableObjects() {
             return this._draggableObjects;
         }
         set draggableObjects(value) {
             this._draggableObjects = value;
+        }
+        constructor() {
+            this._draggableObjects = [];
         }
         addDraggableObject(draggableObject) {
             this._draggableObjects.push(draggableObject);
@@ -2169,15 +2169,6 @@ var Game;
 var Game;
 (function (Game) {
     class UIDraggableObject extends Game.UIObject {
-        constructor(x, y, { type, width, height, radius }) {
-            super(x, y, { type, width, height, radius });
-            this.cursor = "auto";
-            this.onDrop = undefined;
-            this._dargable = false;
-            this.background = undefined;
-            this._iniX = x;
-            this._iniY = y;
-        }
         get dargable() {
             return this._dargable;
         }
@@ -2198,6 +2189,15 @@ var Game;
         }
         get height() {
             return this._height;
+        }
+        constructor(x, y, { type, width, height, radius }) {
+            super(x, y, { type, width, height, radius });
+            this.cursor = "auto";
+            this.onDrop = undefined;
+            this._dargable = false;
+            this.background = undefined;
+            this._iniX = x;
+            this._iniY = y;
         }
         moveBack() {
             this._x = this._iniX;
