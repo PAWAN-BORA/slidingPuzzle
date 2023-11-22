@@ -43,9 +43,9 @@ namespace Game {
                 ctx.save();
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillStyle = "black";
+                ctx.fillStyle = "#dcb771";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = "white";
+                ctx.fillStyle = "#9b501f";
                 ctx.font = "50px bold arial"
                 ctx.fillText(this.num.toString(), this.x+this.width/2, this.y+this.height/2);
                 ctx.restore();

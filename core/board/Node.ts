@@ -235,6 +235,7 @@ namespace Game {
         }
         private getManhattanDistance():number {
             let dis = 0;
+            console.log('this is boxes', this.boxes);
             for(let b of this.boxes) {
                 if(b.num!==b.goalNum) {
                     let goalPos = this.getGoalPostion(b.num); 

@@ -27,18 +27,30 @@
         height:100%;
         width:100%;
         background:rgba(36, 38, 40, 0.9);
-        display: table;
+        display: flex;
         z-index: 50;
+        justify-content: center;
+        align-items: center;
     }
     #loader {
-        display: table-cell;
-        vertical-align: middle;
+        width: 50px;
+        height: 50px;
+        /* background-color: blue; */
+        border-radius: 50%;
+        border: 10px solid #ffffff;
+        border-bottom: 10px solid #c4693c;
+        animation: spin 2s linear infinite 
+
+    }
+    @keyframes spin {
+        0% { rotate: 0deg;}
+        100% {rotate: 360deg;}
     }
     </style>
     <body>
         <section id="game">
             <div id="canvasArea">
-                <canvas id="canvas" width="1366" height="768" style="border: 1px solid red;"> </canvas>
+                <canvas id="canvas" width="1366" height="768" > </canvas>
             </div>
             <!-- <div id="starting_page">
                 <div>
@@ -46,7 +58,7 @@
                 </div>
             </div> -->
              <div id="loading_screen">
-                <div id="loader"><img src='assets/texture/swa_loader.gif'></div>
+                <div id="loader"></div>
             </div>
            
             <!-- <div id="gameOver">

@@ -20,7 +20,8 @@ namespace Game {
          private preload():void {
             // new Picture("front", "assets/texture/background.jpg");
             // new Picture("bg", "assets/texture/background.jpg");
-            new Picture("btn_format", "assets/texture/btn_format.png");
+            new Picture("btn_format1", "assets/texture/btn_format.png");
+            new Picture("btn_format", "assets/texture/btn_wood.png");
 
          }
          private init():void {

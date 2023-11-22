@@ -22,7 +22,8 @@ var Game;
             this.preload();
         }
         preload() {
-            new Game.Picture("btn_format", "assets/texture/btn_format.png");
+            new Game.Picture("btn_format1", "assets/texture/btn_format.png");
+            new Game.Picture("btn_format", "assets/texture/btn_wood.png");
         }
         init() {
             Game.MouseManager.initialize(Game.cvs);
@@ -129,6 +130,7 @@ var Game;
     class AssetManager {
         static addImage(name, image) {
             AssetManager.pictures[name] = image;
+            callBack(Object.keys(AssetManager.pictures).length);
         }
         static addSound(name, sound) {
             AssetManager.sounds[name] = sound;
@@ -191,7 +193,7 @@ var Game;
             return this.boxes;
         }
         constructor(dim) {
-            this.size = 150;
+            this.size = 120;
             this.boxes = [];
             this.initialTouch = undefined;
             this.selectedBox = undefined;
@@ -201,6 +203,20 @@ var Game;
             this.startingPointHor = 180;
             this.startingPointVer = 100;
             this.numbers = [];
+            this.jumbleNum = 2;
+            this.solutionNodes = [];
+            this.solutionBoxes = [];
+            this.lastNode = undefined;
+            if (dim == 3) {
+                this.jumbleNum = randomInt(12, 18);
+            }
+            else if (dim == 4) {
+                this.jumbleNum = randomInt(18, 36);
+            }
+            else {
+                this.jumbleNum = randomInt(20, 45);
+            }
+            this.startingPointVer = (Game.cvs.height - dim * this.size) / 2;
             this.dim = dim;
             this.setup();
         }
@@ -348,31 +364,17 @@ var Game;
             }
         }
         setup() {
-            if (this.dim % 2 === 1) {
-                this.numbers = this.getNumbers("odd");
-            }
-            else {
-                this.numbers = this.getNumbers("even");
-            }
-            this.resetNumbers();
+            this.initalizeNum();
         }
-        resetNumbers() {
-            let pos = 0;
-            let goalNum = 0;
+        initalizeNum() {
+            let num = 0;
             for (let i = 0; i < this.dim; i++) {
                 for (let j = 0; j < this.dim; j++) {
-                    if (i === this.dim - 1 && j === this.dim - 1) {
-                        goalNum = undefined;
+                    num++;
+                    if (num == this.dim * this.dim) {
+                        num = undefined;
                     }
-                    else {
-                        goalNum++;
-                    }
-                    if (this.blankPos === (i * this.dim + j)) {
-                        this.boxes[i * this.dim + j] = new Game.Box(this.startingPointHor + j * (this.size + 1), this.startingPointVer + i * (this.size + 1), this.size, this.size, undefined, goalNum);
-                    }
-                    else {
-                        this.boxes[i * this.dim + j] = new Game.Box(this.startingPointHor + j * (this.size + 1), this.startingPointVer + i * (this.size + 1), this.size, this.size, this.numbers[pos++], goalNum);
-                    }
+                    this.boxes[i * this.dim + j] = new Game.Box(this.startingPointHor + j * (this.size + 1), this.startingPointVer + i * (this.size + 1), this.size, this.size, num, num);
                     this.boxes[i * this.dim + j].position = new Game.Point(i + 1, j + 1);
                 }
             }
@@ -422,17 +424,68 @@ var Game;
                     }
                 }
             }
-            console.log(this.boxes);
+            this.randomizePuzzle();
+        }
+        resetNumbers() {
+            if (this.lastNode == undefined)
+                return;
+            this.setBoxNum(this.lastNode.boxes);
+        }
+        randomizePuzzle() {
+            let lastDir = "";
+            this.solutionBoxes = [];
+            for (let i = 0; i < this.jumbleNum; i++) {
+                for (let box of this.boxes) {
+                    if (box.num == undefined) {
+                        let neighbours = [];
+                        if (box.left != undefined && lastDir != "left") {
+                            neighbours.push({ dir: "right", box: box.left });
+                        }
+                        if (box.right != undefined && lastDir != "right") {
+                            neighbours.push({ dir: "left", box: box.right });
+                        }
+                        if (box.top != undefined && lastDir != "up") {
+                            neighbours.push({ dir: "down", box: box.top });
+                        }
+                        if (box.bottom != undefined && lastDir != "down") {
+                            neighbours.push({ dir: "up", box: box.bottom });
+                        }
+                        let randNum = randomInt(0, neighbours.length - 1);
+                        let nextBox = neighbours[randNum].box;
+                        lastDir = neighbours[randNum].dir;
+                        let reverseDir = this.getReverseDir(lastDir);
+                        this.setPos(box, nextBox, new Game.Point(box.x, box.y));
+                        this.solutionBoxes.push(new Game.MovedBox(box, reverseDir));
+                        break;
+                    }
+                }
+            }
+            this.solutionBoxes.reverse();
+            this.lastNode = new Game.Node(window.structuredClone(this.boxes), this.dim, 0);
+        }
+        getReverseDir(dir) {
+            let reverseDir = "";
+            if (dir == "left") {
+                reverseDir = "right";
+            }
+            else if (dir == "right") {
+                reverseDir = "left";
+            }
+            else if (dir == "down") {
+                reverseDir = "up";
+            }
+            else if (dir == "up") {
+                reverseDir = "down";
+            }
+            return reverseDir;
         }
         checkAnswer() {
             let moving = 0;
             for (let b of this.boxes) {
                 if (b.goalNum == b.num) {
                     moving++;
-                    console.log(b.goalNum);
                 }
             }
-            console.log(moving);
             if (this.dim === 3 && moving === 9) {
                 return true;
             }
@@ -462,10 +515,7 @@ var Game;
                         blankLine = randomInt(0, this.dim - 1);
                     }
                 }
-                console.log(inversion);
-                console.log(blankLine);
                 let int = randomInt(0, this.dim - 1);
-                console.log(int);
                 this.blankPos = int + blankLine * this.dim;
                 return numbers;
             }
@@ -476,7 +526,6 @@ var Game;
                 while (inversion % 2 === 1) {
                     numbers = randomIntArray(1, size);
                     inversion = this.getPair(numbers);
-                    console.log(inversion);
                 }
                 this.blankPos = randomInt(0, numbers.length);
                 return numbers;
@@ -579,6 +628,55 @@ var Game;
                 }
             }
         }
+        animateResult(box, dir, nextBox, initialPos, time = 10) {
+            return __awaiter(this, void 0, void 0, function* () {
+                return new Promise((resolve, reject) => {
+                    if (dir === 'left') {
+                        let int = setInterval(() => {
+                            box.x -= 5;
+                            if (box.x <= nextBox.x) {
+                                this.setPos(box, nextBox, initialPos);
+                                clearInterval(int);
+                                resolve("left");
+                            }
+                        }, time);
+                    }
+                    else if (dir === 'right') {
+                        let int = setInterval(() => {
+                            box.x += 5;
+                            if (box.x >= nextBox.x) {
+                                this.setPos(box, nextBox, initialPos);
+                                clearInterval(int);
+                                resolve("right");
+                            }
+                        }, time);
+                    }
+                    else if (dir === 'down') {
+                        let int = setInterval(() => {
+                            box.y += 5;
+                            if (box.y >= nextBox.y) {
+                                this.setPos(box, nextBox, initialPos);
+                                clearInterval(int);
+                                resolve("down");
+                            }
+                        }, time);
+                    }
+                    else if (dir === 'up') {
+                        let int = setInterval(() => {
+                            box.y -= 5;
+                            if (box.y <= nextBox.y) {
+                                this.setPos(box, nextBox, initialPos);
+                                clearInterval(int);
+                                resolve("up");
+                            }
+                        }, time);
+                    }
+                    else {
+                        reject("no direction found");
+                    }
+                });
+            });
+        }
         setPos(box, nextBox, initialPos) {
             let currentNum = box.num, nextNum = nextBox.num;
             box.num = nextNum;
@@ -592,8 +690,10 @@ var Game;
         }
         render() {
             Game.ctx.save();
-            Game.ctx.fillStyle = "white";
-            Game.ctx.fillRect(this.startingPointHor, this.startingPointVer, this.size * this.dim, this.size * this.dim);
+            Game.ctx.fillStyle = "#4e2a15";
+            Game.ctx.beginPath();
+            Game.ctx.roundRect(this.startingPointHor - 4, this.startingPointVer - 4, (this.size * this.dim) + 12, (this.size * this.dim) + 12, [8]);
+            Game.ctx.fill();
             Game.ctx.restore();
             for (let r of this.boxes) {
                 r.render();
@@ -633,7 +733,6 @@ var Game;
                 let path = [rootNode];
                 let bound = rootNode.ManhattanDistance;
                 for (let i = 0; i < 20; i++) {
-                    console.log(bound);
                     let data = this.DLS(path, i, bound);
                     if (data.found) {
                         this.solutionNodes = path;
@@ -796,9 +895,9 @@ var Game;
                 Game.ctx.save();
                 Game.ctx.textAlign = "center";
                 Game.ctx.textBaseline = "middle";
-                Game.ctx.fillStyle = "black";
+                Game.ctx.fillStyle = "#dcb771";
                 Game.ctx.fillRect(this.x, this.y, this.width, this.height);
-                Game.ctx.fillStyle = "white";
+                Game.ctx.fillStyle = "#9b501f";
                 Game.ctx.font = "50px bold arial";
                 Game.ctx.fillText(this.num.toString(), this.x + this.width / 2, this.y + this.height / 2);
                 Game.ctx.restore();
@@ -808,6 +907,16 @@ var Game;
         }
     }
     Game.Box = Box;
+})(Game || (Game = {}));
+var Game;
+(function (Game) {
+    class MovedBox {
+        constructor(box, dir) {
+            this.box = box;
+            this.dir = dir;
+        }
+    }
+    Game.MovedBox = MovedBox;
 })(Game || (Game = {}));
 var Game;
 (function (Game) {
@@ -990,6 +1099,7 @@ var Game;
         }
         getManhattanDistance() {
             let dis = 0;
+            console.log('this is boxes', this.boxes);
             for (let b of this.boxes) {
                 if (b.num !== b.goalNum) {
                     let goalPos = this.getGoalPostion(b.num);
@@ -1754,13 +1864,17 @@ var Game;
 (function (Game) {
     class GameState {
         constructor(world) {
-            this.boardDim = 3;
+            this.boardDim = puzzleDim;
             this.uIManager = new Game.UIManager();
             this.board = new Game.Board(this.boardDim);
             this.buttonManager = new Game.ButtonManager();
             this.uIManager.addManagers(this.board);
             this.uIManager.addManagers(this.buttonManager);
             this.setButtons();
+            this.backgroundGradient = Game.ctx.createLinearGradient(Game.cvs.width / 2, 0, Game.cvs.width / 2, Game.cvs.height);
+            this.backgroundGradient.addColorStop(0, "#bd854d");
+            this.backgroundGradient.addColorStop(0.5, "#eac5a4");
+            this.backgroundGradient.addColorStop(1, "#bd854d");
         }
         setup() {
             Game.MouseManager.setUIManager(this.uIManager);
@@ -1769,17 +1883,6 @@ var Game;
         resetGame() {
         }
         setButtons() {
-            let checkBtn = new Game.UIButton(1000, 224.6, { type: "rectangle", width: 143, height: 47 });
-            checkBtn.text = "Check";
-            checkBtn.textStyle.align = "center";
-            checkBtn.textStyle.baseline = "middle";
-            checkBtn.textStyle.size = "25px";
-            checkBtn.textStyle.color = "white";
-            checkBtn.background = Game.AssetManager.pictures["btn_format"].image;
-            checkBtn.onClick = () => {
-                this.boardSolution = new Game.BoardSoultion(this.board.getBoxes, this.boardDim);
-                this.boardSolution.idaSolution();
-            };
             let resetBtn = new Game.UIButton(1000, 496.3, { type: "rectangle", width: 143, height: 47 });
             resetBtn.text = "reset";
             resetBtn.textStyle.align = "center";
@@ -1790,48 +1893,34 @@ var Game;
             resetBtn.onClick = () => {
                 this.board.resetNumbers();
             };
-            let solveBtn = new Game.UIButton(1000, 300, { type: "rectangle", width: 143, height: 47 });
-            solveBtn.text = "solve";
-            solveBtn.textStyle.align = "center";
-            solveBtn.textStyle.baseline = "middle";
-            solveBtn.textStyle.size = "25px";
-            solveBtn.textStyle.color = "white";
-            solveBtn.background = Game.AssetManager.pictures["btn_format"].image;
-            solveBtn.onClick = () => {
-                this.boardSolution = new Game.BoardSoultion(this.board.getBoxes, this.boardDim);
-                this.boardSolution.solution();
-            };
-            let showSolution = new Game.UIButton(1000, 400, { type: "rectangle", width: 143, height: 47 });
-            showSolution.text = "show sol";
+            let showSolution = new Game.UIButton(1000, 400, { type: "rectangle", width: 162, height: 47 });
+            showSolution.text = "view solution";
             showSolution.textStyle.align = "center";
             showSolution.textStyle.baseline = "middle";
             showSolution.textStyle.size = "25px";
             showSolution.textStyle.color = "white";
             showSolution.background = Game.AssetManager.pictures["btn_format"].image;
             showSolution.onClick = () => {
-                if (this.boardSolution.solutionNodes.length !== 0) {
-                    this.viewSolution(this.boardSolution.solutionNodes);
-                }
-                else {
-                    console.log("not solved yet");
-                }
-                ;
+                this.board.resetNumbers();
+                this.viewSolution(this.board.solutionBoxes);
             };
-            this.buttonManager.addButton(checkBtn);
             this.buttonManager.addButton(resetBtn);
-            this.buttonManager.addButton(solveBtn);
             this.buttonManager.addButton(showSolution);
         }
-        viewSolution(solutionNodes) {
-            let num = 0;
-            let interval = setInterval(() => {
-                num++;
-                this.board.setBoxNum(solutionNodes[num].boxes);
-                console.log(num, solutionNodes.length);
-                if (num === solutionNodes.length - 1) {
-                    clearInterval(interval);
+        viewSolution(solutionBoxes) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let num = 0;
+                while (num < solutionBoxes.length) {
+                    let box = solutionBoxes[num].box;
+                    let nextBox = this.board.getBoxes.find(ele => ele.num == undefined);
+                    console.log(box, nextBox);
+                    const dir = solutionBoxes[num].dir;
+                    const initialPoint = new Game.Point(box.x, box.y);
+                    const res = yield this.board.animateResult(box, dir, nextBox, initialPoint, 16);
+                    console.log(res);
+                    num++;
                 }
-            }, 500);
+            });
         }
         checkAnswer() {
         }
@@ -1842,12 +1931,10 @@ var Game;
         render() {
             Game.ctx.clearRect(0, 0, Game.cvs.width, Game.cvs.height);
             Game.ctx.save();
-            Game.ctx.fillStyle = "#a1e4b9";
+            Game.ctx.fillStyle = this.backgroundGradient;
             Game.ctx.fillRect(0, 0, Game.cvs.width, Game.cvs.height);
             Game.ctx.restore();
             this.uIManager.render();
-            this.board.render();
-            this.buttonManager.render();
         }
     }
     Game.GameState = GameState;
@@ -2285,10 +2372,18 @@ var Game;
     Game.World = World;
 })(Game || (Game = {}));
 let game = new Game.Engine(1366, 768);
+const totalImages = 2;
+let loadImages = 0;
+let puzzleDim = 3;
+function callBack(val) {
+    console.log(val);
+    if (val == totalImages) {
+        document.getElementById("loading_screen").style.display = "none";
+        game.start("canvas");
+        game.resize();
+    }
+}
 window.onload = () => {
-    document.getElementById("loading_screen").style.display = "none";
-    game.start("canvas");
-    game.resize();
 };
 window.onresize = () => {
     game.resize();

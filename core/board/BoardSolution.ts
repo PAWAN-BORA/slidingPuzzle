@@ -36,7 +36,7 @@ namespace Game {
             let bound = rootNode.ManhattanDistance;
             // console.log(bound)
             for(let i=0; i<20; i++){
-                console.log(bound);
+                // console.log(bound);
                 // console.log(path.length);
                 let data = this.DLS(path, i, bound);
                 // console.log(i);
