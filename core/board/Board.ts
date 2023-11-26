@@ -14,13 +14,13 @@ namespace Game {
     private initialPos: Point = undefined;
     private startingPointHor: number = 180;
     private startingPointVer: number = 100;
-    private numbers: number[] = [];
     private blankPos: number;
 
     private jumbleNum: number = 2;
     public solutionNodes: Node[] = [];
     public solutionBoxes: MovedBox[] = [];
     private lastNode: Node = undefined;
+    public callback:Function = ()=>{}
     constructor(dim: number) {
       if (dim == 3) {
         this.jumbleNum = randomInt(12, 18);
@@ -29,7 +29,7 @@ namespace Game {
       } else {
         this.jumbleNum = randomInt(20, 45)
       }
-      this.startingPointVer = (cvs.height - dim*this.size)/2
+      this.startingPointVer = (cvs.height - dim*this.size)/2;
       this.dim = dim;
       this.setup();
 
@@ -168,19 +168,21 @@ namespace Game {
         this.boxes[i].num = boxes[i].num;
       }
     }
-
+    
     private setup() {
 
-      // if (this.dim % 2 === 1) {
-      //   this.numbers = this.getNumbers("odd");
-      // } else {
-      //   this.numbers = this.getNumbers("even");
-      // }
-      // this.blankPos = randomInt(0, this.numbers.length);
-      // this.numbers = [1, 2, 3, 4, 5, 6, 7, 8]
-      // this.resetNumbers();
       this.initalizeNum();
 
+    }
+    public getNewPuzzle(){
+      if (this.dim == 3) {
+        this.jumbleNum = randomInt(12, 18);
+      } else if (this.dim == 4) {
+        this.jumbleNum = randomInt(18, 36);
+      } else if(this.dim==5){
+        this.jumbleNum = randomInt(24, 55)
+      }
+      this.initalizeNum();
     }
     private initalizeNum() {
       let num = 0;
@@ -289,21 +291,25 @@ namespace Game {
       return reverseDir;
     }
     public checkAnswer(): boolean {
-      let moving = 0;
-      for (let b of this.boxes) {
-        if (b.goalNum == b.num) {
-          moving++;
-        }
+      for(let b of this.boxes){
+        if(b.goalNum!=b.num)return false;
+      }
+      return true;
+      // let moving = 0;
+      // for (let b of this.boxes) {
+      //   if (b.goalNum == b.num) {
+      //     moving++;
+      //   }
 
-      }
-      if (this.dim === 3 && moving === 9) {
-        return true;
-      } else if (this.dim === 4 && moving === 16) {
-        return true;
-      } else if (this.dim === 2 && moving === 4) {
-        return true;
-      }
-      return false;
+      // }
+      // if (this.dim === 3 && moving === 9) {
+      //   return true;
+      // } else if (this.dim === 4 && moving === 16) {
+      //   return true;
+      // } else if (this.dim === 5 && moving === 25) {
+      //   return true;
+      // }
+      // return false;
     }
     private getNumbers(type: string): number[] {
       if (type === "even") {
@@ -490,6 +496,8 @@ namespace Game {
       box.num = nextNum;
       nextBox.num = currentNum;
       box.x = initialPos.x, box.y = initialPos.y;
+      this.callback();
+     
     }
     public update() {
       for (let r of this.boxes) {

@@ -15,7 +15,7 @@ namespace Game {
             this.boxes = boxes;
             this.dim = dim;
             this.cost = cost;
-            this.ManhattanDistance = this.getManhattanDistance();
+            // this.ManhattanDistance = this.getManhattanDistance();
             // this.neighbours = this.getNeigbourNode();
         }
 

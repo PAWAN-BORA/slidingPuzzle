@@ -13,12 +13,12 @@ namespace Game {
             this.world = world;
             this.playAgain = new UIButton(600, 440, {type:"rectangle", width:120, height:120});
             // this.playAgain.background = AssetManager.pictures["replay"].image
-            // this.playAgain.text = "Replay";
-            // this.playAgain.textStyle.font = "arial";
-            // this.playAgain.textStyle.color = "blue";
-            // this.playAgain.textStyle.size = "30px";
-            // this.playAgain.textStyle.align = "center";
-            // this.playAgain.textStyle.baseline = "middle";
+            this.playAgain.text = "Replay";
+            this.playAgain.textStyle.font = "arial";
+            this.playAgain.textStyle.color = "blue";
+            this.playAgain.textStyle.size = "30px";
+            this.playAgain.textStyle.align = "center";
+            this.playAgain.textStyle.baseline = "middle";
             this.playAgain.onClick = ()=>{
                 this.posY = -680;
                 this.isAnimating = true;
@@ -70,7 +70,7 @@ namespace Game {
                 ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
                 ctx.fillRect(0, 0, game.width, game.height);
             }
-            ctx.drawImage(AssetManager.pictures["over"].image, this.posX, this.posY);
+            // ctx.drawImage(AssetManager.pictures["over"].image, this.posX, this.posY);
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.font = "bold 80px arial";

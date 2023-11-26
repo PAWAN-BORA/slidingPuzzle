@@ -1,5 +1,5 @@
 namespace Game {
-    interface textFormat {
+    export interface textFormat {
         color:string;
         font:string;
         size:string;

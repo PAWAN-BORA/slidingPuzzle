@@ -27,7 +27,7 @@ namespace Game {
 
         }
         public render():void {
-            ctx.drawImage(AssetManager.pictures["front"].image, 0, 0, game.width, game.height);
+            // ctx.drawImage(AssetManager.pictures["front"].image, 0, 0, game.width, game.height);
             this.uIManager.render();
         }
     }
